@@ -119,7 +119,11 @@ def training(train_dspath, num_classes, max_epochs, model_output_path,
     
    
     #testing phase
-    print("Testing phase...")            
+    print("Testing phase...") 
+    #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = 'cpu'
+    
+    print(f"Using device: {device}")           
     test_dspath = r'/home/anagha/Documents/MAI/ACV/Portfolio2/Traffic/Data/Test'
     val_transform = transforms.Compose([
         transforms.Resize((64,64)),
@@ -137,6 +141,8 @@ def training(train_dspath, num_classes, max_epochs, model_output_path,
     model.to(device).eval()
     all_preds = []
     all_labels = []
+    import time
+    start_time = time.time()
     with torch.no_grad():
         for imgs, labels in test_loader:
             imgs = imgs.to(device)
@@ -145,6 +151,13 @@ def training(train_dspath, num_classes, max_epochs, model_output_path,
             all_preds.extend(preds.numpy())
             all_labels.extend(labels.numpy())
 
+    end_time = time.time()
+    print(f"Time taken for evaluation: {end_time - start_time:.2f} seconds")
+
+    # FPS calculation
+    num_images = len(test_dataset)
+    fps = num_images / (end_time - start_time)
+    print(f"Frames per second (FPS): {fps:.2f}")
 
     from sklearn.metrics import accuracy_score, classification_report
     acc = accuracy_score(all_labels, all_preds)
